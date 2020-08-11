@@ -49,10 +49,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationTokenFilter authenticationTokenFilter;
 
     /**
+     * 身份认证接口
+     */
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        使用自定义实现的 UserDetailsService 实现类，更加灵活且自由的实现认证的用户信息的读取
+        auth.userDetailsService(userDetailsService)
+//        设置 PasswordEncoder 密码编码器
+                .passwordEncoder(bCryptPasswordEncoder());
+    }
+    /**
+     * 强散列哈希加密实现
+     */
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
      * 解决 无法直接注入 AuthenticationManager
-     *
-     * @return
-     * @throws Exception
      */
     @Bean
     @Override
@@ -61,6 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
+     * 该方法主要用来配置 URL 的权限控制
      * anyRequest          |   匹配所有请求路径
      * access              |   SpringEl表达式结果为true时可以访问
      * anonymous           |   匿名可以访问
@@ -107,26 +123,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .headers().frameOptions().disable();
         httpSecurity.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler);
-        // 添加 JWT filter
+        // 添加 JWT 认证过滤器 authenticationTokenFilter ，用于用户使用用户名与密码登录完成后，后续请求基于 JWT 来认证
         httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
-
-
-    /**
-     * 强散列哈希加密实现
-     */
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * 身份认证接口
-     */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-                .passwordEncoder(bCryptPasswordEncoder());
-    }
-
 }

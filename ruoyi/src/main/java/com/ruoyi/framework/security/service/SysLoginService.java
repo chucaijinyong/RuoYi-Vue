@@ -76,7 +76,7 @@ public class SysLoginService {
         }
         // 验证通过，记录相应的登陆成功日志
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
-        // 生成 Token
+        // 生成 Token  Principal是当事人之意
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         return tokenService.createToken(loginUser);
     }
